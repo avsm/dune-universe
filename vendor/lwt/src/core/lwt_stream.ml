@@ -1,7 +1,23 @@
-(* This file is part of Lwt, released under the MIT license. See LICENSE.md for
-   details, or visit https://github.com/ocsigen/lwt/blob/master/LICENSE.md. *)
-
-
+(* OCaml promise library
+ * http://www.ocsigen.org/lwt
+ * Copyright (C) 2009 Jérémie Dimino
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, with linking exceptions;
+ * either version 2.1 of the License, or (at your option) any later
+ * version. See COPYING file for details.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *)
 
 open Lwt.Infix
 
@@ -894,13 +910,12 @@ let rec iter_p_rec node f s =
 
 let iter_p f s = iter_p_rec s.node f s
 
-let iter_n ?(max_concurrency = 1) f stream =
+let iter_n ?(max_threads = 1) f stream =
   begin
-    if max_concurrency <= 0 then
+    if max_threads <= 0 then
       let message =
-        Printf.sprintf
-          "Lwt_stream.iter_n: max_concurrency must be > 0, %d given"
-          max_concurrency
+        Printf.sprintf "Lwt_stream.iter_n: max_threads must be > 0, %d given"
+          max_threads
       in
       invalid_arg message
   end;
@@ -920,7 +935,7 @@ let iter_n ?(max_concurrency = 1) f stream =
     | Some elt ->
       loop (f elt :: running) (pred available)
   in
-  loop [] max_concurrency
+  loop [] max_threads
 
 let rec find_rec node f s =
   if node == !(s.last) then

@@ -1,48 +1,37 @@
-(* This file is part of Lwt, released under the MIT license. See LICENSE.md for
-   details, or visit https://github.com/ocsigen/lwt/blob/master/LICENSE.md. *)
-
-
+(* Lwt
+ * http://www.ocsigen.org
+ * Copyright (C) 2008 Jérôme Vouillon
+ *               2012 Jérémie Dimino
+ * Laboratoire PPS - CNRS Université Paris Diderot
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, with linking exceptions;
+ * either version 2.1 of the License, or (at your option) any later version.
+ * See COPYING file for details.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *)
 
 (** External resource pools.
 
-    This module provides an abstraction for managing collections of resources.
-    One example use case is for managing a pool of database connections, where
-    instead of establishing a new connection each time you need one (which is
-    expensive), you can keep a pool of opened connections and reuse ones that
-    are free.
+    For example, instead of creating a new database connection each time you
+    need one, keep a pool of opened connections and reuse ones that are free.
+    The pool also provides a limit on the number of connections that can
+    simultaneously be open.
 
-    It also provides the capability of:
-    - specifying the maximum number of resources that the pool can manage
-      simultaneously,
-    - checking whether a resource is still valid before/after use, and
-    - performing cleanup logic before dropping a resource.
-
-    The following example illustrates how it is used with an imaginary
-    [Db] module:
-
-    {[
-let uri = "postgresql://localhost:5432"
-
-(* Create a database connection pool with max size of 10. *)
-let pool =
-  Lwt_pool.create 10
-    ~dispose:(fun connection -> Db.close connection |> Lwt.return)
-    (fun () -> Db.connect uri |> Lwt.return)
-
-(* Use the pool in queries. *)
-let create_user name =
-  Lwt_pool.use pool (fun connection ->
-      connection
-      |> Db.insert "users" [("name", name)]
-      |> Lwt.return
-    )
-]}
-
-    Note that this is {e not} intended to keep a pool of system threads.
-    If you want to have such pool, consider using {!Lwt_preemptive}. *)
+    If you want to have a pool of {e system} threads, consider using
+    [Lwt_preemptive]. *)
 
 type 'a t
-  (** A pool containing elements of type ['a]. *)
+  (** Pools containing elements of type ['a]. *)
 
 val create :
   int ->
@@ -74,12 +63,9 @@ val create :
       of. *)
 
 val use : 'a t -> ('a -> 'b Lwt.t) -> 'b Lwt.t
-  (** [use p f] requests one free element of the pool [p] and gives it to
+  (** [use p f] takes one free element of the pool [p] and gives it to
       the function [f]. The element is put back into the pool after the
-      promise created by [f] completes.
-
-      In the case that [p] is exhausted and the maximum number of elements
-      is reached, [use] will wait until one becomes free. *)
+      promise created by [f] completes. *)
 
 val clear : 'a t -> unit Lwt.t
   (** [clear p] will clear all elements in [p], calling the [dispose] function
@@ -93,5 +79,5 @@ val clear : 'a t -> unit Lwt.t
       Disposals are performed sequentially in an undefined order. *)
 
 val wait_queue_length : _ t -> int
-  (** [wait_queue_length p] returns the number of {!use} requests currently
+  (** [wait_queue_length p] returns the number of threads currently
       waiting for an element of the pool [p] to become available. *)

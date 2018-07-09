@@ -1,7 +1,8 @@
-# Lwt &nbsp;&nbsp; [![version 4.1.0][version]][releases] [![Gitter chat][gitter-img]][gitter] [![Travis status][travis-img]][travis] [![AppVeyor status][appveyor-img]][appveyor]
+# Lwt &nbsp;&nbsp; [![version 4.0.0][version]][releases] [![LGPL][license-img]][copying] [![Gitter chat][gitter-img]][gitter] [![Travis status][travis-img]][travis] [![AppVeyor status][appveyor-img]][appveyor]
 
-[version]:      https://img.shields.io/badge/version-4.1.0-blue.svg
+[version]:      https://img.shields.io/badge/version-4.0.0-blue.svg
 [releases]:     https://github.com/ocsigen/lwt/releases
+[license-img]:  https://img.shields.io/badge/license-LGPL-blue.svg
 [gitter-img]:   https://img.shields.io/badge/chat-on_gitter-lightgrey.svg
 [travis]:       https://travis-ci.org/ocsigen/lwt/branches
 [travis-img]:   https://img.shields.io/travis/ocsigen/lwt/master.svg?label=travis
@@ -42,7 +43,7 @@ let () =
   | Some response -> print_string response
   | None -> prerr_endline "Request timed out"; exit 1
 
-(* ocamlfind opt -package lwt.unix -package lwt_ppx -linkpkg -o request example.ml
+(* ocamlfind opt -package lwt.unix -package lwt.ppx -linkpkg -o request example.ml
    ./request *)
 ```
 
@@ -133,7 +134,8 @@ mention enlightening the maintainers!
 
 Subscribe to the [announcements issue][announcements] to get news about Lwt
 releases. It is less noisy than watching the whole repository. Announcements are
-also made in [/r/ocaml][reddit], and on [discuss.ocaml.org][discourse].
+also made in [/r/ocaml][reddit], on the [OCaml mailing list][caml-list], and on
+[discuss.ocaml.org][discourse].
 
 [gitter]: https://gitter.im/ocaml-lwt/Lobby
 [irc]:    http://webchat.freenode.net/?channels=#ocaml
@@ -168,28 +170,46 @@ also made in [/r/ocaml][reddit], and on [discuss.ocaml.org][discourse].
 [all-issues]: https://github.com/ocsigen/lwt/issues
 [roadmap]:  https://github.com/ocsigen/lwt/wiki/Roadmap
 [easy-issues]: https://github.com/ocsigen/lwt/labels/easy
-[contributing-md]: https://github.com/ocsigen/lwt/blob/master/docs/CONTRIBUTING.md#readme
+[contributing-md]: https://github.com/ocsigen/lwt/blob/master/doc/CONTRIBUTING.md#readme
 [testing-issues]: https://github.com/ocsigen/lwt/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20label%3Aeasy%20test
 
 
 <br/>
 
-## Libraries to use with Lwt
+## License
 
-- [alcotest](https://github.com/mirage/alcotest/) —
-unit testing
-- [angstrom](https://github.com/inhabitedtype/angstrom) —
-parser combinators
-- [cohttp](https://github.com/mirage/ocaml-cohttp) — HTTP client and server
-- [cstruct](https://github.com/mirage/ocaml-cstruct) —
-interop with C-like structures
-- [ezjsonm](https://github.com/mirage/ezjsonm) —
-JSON parsing and output
-- [faraday](https://github.com/inhabitedtype/faraday) —
-serialization combinators
-- [logs](https://github.com/dbuenzli/logs) —
-logging
-- [lwt-parallel](https://github.com/ivg/parallel) —
-distributed computing
-- [opium](https://github.com/rgrinberg/opium) —
-web framework
+Lwt is released under the LGPL, with an OpenSSL linking exception. See
+[`COPYING`][copying].
+
+[copying]: https://github.com/ocsigen/lwt/blob/master/doc/COPYING
+
+<br/>
+
+## Related Libraries
+
+- [alcotest](https://github.com/mirage/alcotest/)
+A lightweight framework for unit testing
+
+- [angstrom](https://github.com/inhabitedtype/angstrom)
+A library for building parsers with a focus on efficiency, concurrency, and reusability
+
+- [cohttp](https://github.com/mirage/ocaml-cohttp)
+A lightweight library for writing HTTP clients and servers
+
+- [cstruct](https://github.com/mirage/ocaml-cstruct)
+A library and syntax extension for interop with C-like structures
+
+- [ezjsonm](https://github.com/mirage/ezjsonm)
+A library for easy interop with JSON
+
+- [faraday](https://github.com/inhabitedtype/faraday)
+A library for fast and memory-efficient serialization
+
+- [logs](https://github.com/dbuenzli/logs)
+A logging library with reporting decoupled from logging
+
+- [lwt-parallel](https://github.com/ivg/parallel)
+A library for distributed computing
+
+- [opium](https://github.com/rgrinberg/opium)
+A web toolkit that uses [Sinatra](https://github.com/sinatra/sinatra)-inspired middleware

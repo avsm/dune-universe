@@ -14,19 +14,16 @@ let section = Lwt_log.Section.make "lambda-term(widget_callbacks)"
    +-----------------------------------------------------------------+ *)
 
 type switch = { mutable switch_state : (unit -> unit) list option }
-type 'a callbacks = 'a LTerm_dlist.t
-
-let create () = LTerm_dlist.create ()
 
 let register switch_opt seq f =
   match switch_opt with
     | None ->
-        ignore (LTerm_dlist.add_l f seq)
+        ignore (Lwt_sequence.add_l f seq)
     | Some switch ->
         match switch.switch_state with
           | Some l ->
-              let node = LTerm_dlist.add_l f seq in
-              switch.switch_state <- Some ((fun () -> LTerm_dlist.remove node) :: l)
+              let node = Lwt_sequence.add_l f seq in
+              switch.switch_state <- Some ((fun () -> Lwt_sequence.remove node) :: l)
           | None ->
               ()
 
@@ -39,7 +36,7 @@ let stop switch =
         ()
 
 let exec_callbacks seq x =
-  LTerm_dlist.iter_l
+  Lwt_sequence.iter_l
     (fun f ->
        try
          f x
@@ -48,7 +45,7 @@ let exec_callbacks seq x =
     seq
 
 let exec_filters seq x =
-  LTerm_dlist.fold_l
+  Lwt_sequence.fold_l
     (fun f acc ->
        if acc then
          true

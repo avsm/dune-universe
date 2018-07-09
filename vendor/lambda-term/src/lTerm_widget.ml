@@ -7,7 +7,7 @@
  * This file is a part of Lambda-Term.
  *)
 
-open CamomileLibraryDefault.Camomile
+open CamomileLibraryDyn.Camomile
 open LTerm_geom
 open LTerm_draw
 

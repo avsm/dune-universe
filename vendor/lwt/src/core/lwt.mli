@@ -1,5 +1,26 @@
-(* This file is part of Lwt, released under the MIT license. See LICENSE.md for
-   details, or visit https://github.com/ocsigen/lwt/blob/master/LICENSE.md. *)
+(* OCaml promise library
+ * http://www.ocsigen.org/lwt
+ * Copyright (C) 2005-2008 Jérôme Vouillon
+ * Laboratoire PPS - CNRS Université Paris Diderot
+ *               2009-2012 Jérémie Dimino
+ *               2017      Anton Bachin
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, with linking exceptions;
+ * either version 2.1 of the License, or (at your option) any later
+ * version. See COPYING file for details.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *)
 
 
 
@@ -49,7 +70,7 @@ let () =
     Lwt.return ()
   end
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix echo.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix echo.ml && ./a.out *)
 ]}
 
     This is all explained in the next sections:
@@ -148,7 +169,7 @@ let () =
 
   Lwt_main.run p
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     The way that works is everything in scope after the “[in]” in
@@ -195,7 +216,7 @@ let () =
     Lwt_io.printl "Only 2 more seconds passed"
   end
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     This program takes about five seconds to run. We are still new to [let%lwt],
@@ -534,11 +555,11 @@ let () =
     Lwt_io.printf "One second ago, you entered %s\n" line
   end
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     This uses the Lwt {{: Ppx_lwt.html} PPX} (preprocessor). Note that we had to
-    add package [lwt_ppx] to the command line for building this program. We will
+    add package [lwt.ppx] to the command line for building this program. We will
     do that throughout this manual.
 
     Another way to write [Lwt.bind], that you may encounter while reading code,
@@ -595,7 +616,7 @@ let () =
     with Pervasives.Exit -> Lwt_io.printl "Got Pervasives.Exit"
   end
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     A particular advantage of the PPX syntax is that it is not necessary to
@@ -683,7 +704,7 @@ let () =
         Lwt_io.close file)
   end
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     As with {!Lwt.bind} and {!Lwt.catch}, there is a syntactic sugar for
@@ -701,7 +722,7 @@ let () =
       Lwt_io.close file]
   end
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     Also as with {!Lwt.bind} and {!Lwt.catch}, three promises are involved:
@@ -815,7 +836,7 @@ let () =
     Lwt_io.printl line
   end
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     If one of the I/O operations in [show_nag] were to fail, the promise
@@ -841,7 +862,7 @@ let () =
     Lwt_io.printl line
   end
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     In this version, if I/O in [show_nag] fails with an exception, the exception
@@ -910,7 +931,7 @@ let () =
   let p_3 = Lwt.join [p_1; p_2] in
   Lwt_main.run p_3
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     If all of the promises in [ps] become fulfilled, [Lwt.join ps] is also
@@ -941,7 +962,7 @@ let () =
 
   Lwt_main.run (Lwt.pick [echo; timeout])
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     If the first promise in [ps] to become resolved is fulfilled, the result
@@ -1033,7 +1054,7 @@ let () =
 
   Lwt_main.run p
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     At the time [Lwt.cancel] is called, [p] “depends” on the [sleep] promise
@@ -1143,7 +1164,7 @@ let () =
     Lwt_io.printf "%i\n" number
   end
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     By comparison, the {!Lwt.bind} version is more awkward:
@@ -1482,7 +1503,7 @@ let () =
     end
   end
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
     Note that the string [Hello world!] was passed to [say_hello] through the
@@ -1671,7 +1692,7 @@ let () =
   Lwt.async handle_io;
   Lwt_main.run (compute 100_000_000)
 
-(* ocamlfind opt -linkpkg -package lwt_ppx,lwt.unix code.ml && ./a.out *)
+(* ocamlfind opt -linkpkg -package lwt.ppx,lwt.unix code.ml && ./a.out *)
 ]}
 
   If you replace the call to [Lwt.pause] by [Lwt.return] in the program above,

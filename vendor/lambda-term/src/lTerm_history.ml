@@ -7,7 +7,7 @@
  * This file is a part of Lambda-Term.
  *)
 
-open CamomileLibraryDefault.Camomile
+open CamomileLibraryDyn.Camomile
 
 let return, (>>=) = Lwt.return, Lwt.(>>=)
 
