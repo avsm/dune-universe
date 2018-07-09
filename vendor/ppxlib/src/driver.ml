@@ -61,7 +61,6 @@ end
 module Transform = struct
   type t =
     { name            : string
-    ; aliases         : string list
     ; impl            : (Parsetree.structure -> Parsetree.structure) option
     ; intf            : (Parsetree.signature -> Parsetree.signature) option
     ; lint_impl       : (Parsetree.structure -> Lint_error.t list) option
@@ -74,9 +73,6 @@ module Transform = struct
     ; registered_at   : Caller_id.t
     }
 
-  let has_name t name =
-    (String.equal name t.name) || (List.exists ~f:(String.equal name) t.aliases)
-
   let all : t list ref = ref []
 
   let print_caller_id oc (caller_id : Caller_id.t) =
@@ -86,13 +82,12 @@ module Transform = struct
   ;;
 
   let register ?(extensions=[]) ?(rules=[]) ?enclose_impl ?enclose_intf
-        ?impl ?intf ?lint_impl ?lint_intf ?preprocess_impl ?preprocess_intf
-        ?(aliases=[]) name =
+        ?impl ?intf ?lint_impl ?lint_intf ?preprocess_impl ?preprocess_intf name =
     let rules =
       List.map extensions ~f:Context_free.Rule.extension @ rules
     in
     let caller_id = Caller_id.get ~skip:[Caml.__FILE__] in
-    begin match List.filter !all ~f:(fun ct -> has_name ct name) with
+    begin match List.filter !all ~f:(fun ct -> String.equal ct.name name) with
     | [] -> ()
     | ct :: _ ->
       eprintf "Warning: code transformation %s registered twice.\n" name;
@@ -101,7 +96,6 @@ module Transform = struct
     end;
     let ct =
       { name
-      ; aliases
       ; rules
       ; enclose_impl
       ; enclose_intf
@@ -207,7 +201,6 @@ module Transform = struct
   let builtin_of_context_free_rewriters ~hook ~rules ~enclose_impl ~enclose_intf =
     merge_into_generic_mappers ~hook
       { name = "<builtin:context-free>"
-      ; aliases = []
       ; impl = None
       ; intf = None
       ; lint_impl = None
@@ -226,7 +219,6 @@ module Transform = struct
           if Option.is_some t.lint_impl || Option.is_some t.lint_intf then
             Some
               { name = Printf.sprintf "<lint:%s>" t.name
-              ; aliases = []
               ; impl = None
               ; intf = None
               ; lint_impl = t.lint_impl
@@ -246,7 +238,6 @@ module Transform = struct
           then
             Some
               { name = Printf.sprintf "<preprocess:%s>" t.name
-              ; aliases = []
               ; impl = t.preprocess_impl
               ; intf = t.preprocess_intf
               ; lint_impl = None
@@ -272,14 +263,14 @@ end
 
 let register_transformation = Transform.register
 
-let register_code_transformation ~name ?(aliases=[]) ~impl ~intf =
-  register_transformation name ~impl ~intf ~aliases
+let register_code_transformation ~name ~impl ~intf =
+  register_transformation name ~impl ~intf
 ;;
 
-let register_transformation_using_ocaml_current_ast ?impl ?intf ?aliases name =
+let register_transformation_using_ocaml_current_ast  ?impl ?intf name =
   let impl = Option.map impl ~f:(Ppxlib_ast.Selected_ast.of_ocaml_mapper Structure) in
   let intf = Option.map intf ~f:(Ppxlib_ast.Selected_ast.of_ocaml_mapper Signature) in
-  register_transformation ?impl ?intf ?aliases name
+  register_transformation ?impl ?intf name
 
 let debug_dropped_attribute name ~old_dropped ~new_dropped =
   let print_diff what a b =
@@ -306,7 +297,7 @@ let get_whole_ast_passes ~hook ~expect_mismatch_handler =
     | Some names ->
       List.map names ~f:(fun name ->
         List.find_exn !Transform.all ~f:(fun (ct : Transform.t) ->
-          Transform.has_name ct name))
+          String.equal ct.name name))
   in
   let (`Linters linters, `Preprocess preprocess, `Rest cts) =
     Transform.partition_transformations cts in
@@ -443,10 +434,13 @@ end
 let real_map_structure config cookies st =
   let { C. hook; expect_mismatch_handler } = C.find config in
   Cookies.acknoledge_cookies cookies;
-  if !perform_checks then begin
-    Attribute.reset_checks ();
-    Attribute.collect#structure st
-  end;
+  let st =
+    if !perform_checks then begin
+      Attribute.reset_checks ();
+      Attribute.freshen_and_collect#structure st
+    end else
+      st
+  in
   let st, lint_errors =
     apply_transforms st
       ~field:(fun (ct : Transform.t) -> ct.impl)
@@ -494,10 +488,13 @@ let map_structure st =
 let real_map_signature config cookies sg =
   let { C. hook; expect_mismatch_handler } = C.find config in
   Cookies.acknoledge_cookies cookies;
-  if !perform_checks then begin
-    Attribute.reset_checks ();
-    Attribute.collect#signature sg
-  end;
+  let sg =
+    if !perform_checks then begin
+      Attribute.reset_checks ();
+      Attribute.freshen_and_collect#signature sg
+    end else
+      sg
+  in
   let sg, lint_errors =
     apply_transforms sg
       ~field:(fun (ct : Transform.t) -> ct.intf)
@@ -977,7 +974,7 @@ let parse_apply_list s =
   let names = if String.equal s "" then [] else String.split s ~on:',' in
   List.iter names ~f:(fun name ->
     if not (List.exists !Transform.all ~f:(fun (ct : Transform.t) ->
-      Transform.has_name ct name)) then
+      String.equal ct.name name)) then
       raise (Caml.Arg.Bad (Printf.sprintf "code transformation '%s' does not exist" name)));
   names
 
@@ -1028,12 +1025,8 @@ let shared_args =
     "<string> Mark the given namespace as reserved"
   ; "-no-check", Arg.Clear perform_checks,
     " Disable checks (unsafe)"
-  ; "-check", Arg.Set perform_checks,
-    " Enable checks"
   ; "-no-check-on-extensions", Arg.Clear perform_checks_on_extensions,
     " Disable checks on extension point only"
-  ; "-check-on-extensions", Arg.Set perform_checks_on_extensions,
-    " Enable checks on extension point only"
   ; "-apply", Arg.String handle_apply,
     "<names> Apply these transformations in order (comma-separated list)"
   ; "-dont-apply", Arg.String handle_dont_apply,
@@ -1250,7 +1243,3 @@ let () =
        let structure _ st = real_map_structure config cookies st in
        let signature _ sg = real_map_signature config cookies sg in
        { A.default_mapper with structure; signature })
-
-let enable_checks () =
-  perform_checks := true;
-  perform_checks_on_extensions := true

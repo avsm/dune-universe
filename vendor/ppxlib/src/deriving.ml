@@ -8,37 +8,25 @@ let do_insert_unused_warning_attribute = ref false
 let keep_w32_impl = ref false
 let keep_w32_intf = ref false
 let () =
-  let keep_w32_spec =
-    Caml.Arg.Symbol
-      (["impl"; "intf"; "both"],
-       (function
-         | "impl" -> keep_w32_impl := true
-         | "intf" -> keep_w32_intf := true
-         | "both" ->
-           keep_w32_impl := true;
-           keep_w32_intf := true
-         | _ -> assert false))
-  in
-  let conv_w32_spec =
-    Caml.Arg.Symbol
-      (["code"; "attribute"],
-       (function
-         | "code"      -> do_insert_unused_warning_attribute := false
-         | "attribute" -> do_insert_unused_warning_attribute := true
-         | _           -> assert false))
-  in
-  Driver.add_arg "-deriving-keep-w32"
-    keep_w32_spec
-    ~doc:" Do not try to disable warning 32 for the generated code";
-  Driver.add_arg "-deriving-disable-w32-method"
-    conv_w32_spec
-    ~doc:" How to disable warning 32 for the generated code";
   Driver.add_arg "-type-conv-keep-w32"
-    keep_w32_spec
-    ~doc:" Deprecated, use -deriving-keep-w32";
+    (Symbol
+       (["impl"; "intf"; "both"],
+        (function
+          | "impl" -> keep_w32_impl := true
+          | "intf" -> keep_w32_intf := true
+          | "both" ->
+            keep_w32_impl := true;
+            keep_w32_intf := true
+          | _ -> assert false)))
+    ~doc:" Do not try to disable warning 32 for the generated code";
   Driver.add_arg "-type-conv-w32"
-    conv_w32_spec
-    ~doc:" Deprecated, use -deriving-disable-w32-method"
+    (Symbol
+       (["code"; "attribute"],
+        (function
+          | "code"      -> do_insert_unused_warning_attribute := false
+          | "attribute" -> do_insert_unused_warning_attribute := true
+          | _           -> assert false)))
+    ~doc:" How to disable warning 32 for the generated code"
 
 let keep_w32_impl () = !keep_w32_impl || Driver.pretty ()
 let keep_w32_intf () = !keep_w32_intf || Driver.pretty ()
@@ -468,9 +456,9 @@ let parse_arguments l =
   with Unknown_syntax (loc, msg) ->
     Unknown_syntax (loc, msg)
 
-let mk_deriving_attr context ~prefix ~suffix =
+let mk_deriving_attr context ~suffix =
   Attribute.declare
-    (prefix ^ "deriving" ^ suffix)
+    ("type_conv.deriving" ^ suffix)
     context
     Ast_pattern.(
       let generator_name () =
@@ -491,15 +479,15 @@ let mk_deriving_attr context ~prefix ~suffix =
 
 module Attr = struct
   let suffix = ""
-  let td = mk_deriving_attr ~prefix:"ppxlib." ~suffix Type_declaration
-  let te = mk_deriving_attr ~prefix:"ppxlib." ~suffix Type_extension
-  let ec = mk_deriving_attr ~prefix:"ppxlib." ~suffix Extension_constructor
+  let td = mk_deriving_attr ~suffix Type_declaration
+  let te = mk_deriving_attr ~suffix Type_extension
+  let ec = mk_deriving_attr ~suffix Extension_constructor
 
   module Expect = struct
     let suffix = "_inline"
-    let td = mk_deriving_attr ~prefix:"ppxlib." ~suffix Type_declaration
-    let te = mk_deriving_attr ~prefix:"ppxlib." ~suffix Type_extension
-    let ec = mk_deriving_attr ~prefix:"ppxlib." ~suffix Extension_constructor
+    let td = mk_deriving_attr ~suffix Type_declaration
+    let te = mk_deriving_attr ~suffix Type_extension
+    let ec = mk_deriving_attr ~suffix Extension_constructor
   end
 end
 
@@ -628,8 +616,7 @@ let expand_sig_type_ext ~loc ~path te generators =
   disable_unused_warning_sig ~loc generated
 
 let () =
-  Driver.register_transformation "deriving"
-    ~aliases:["type_conv"]
+  Driver.register_transformation "type_conv"
     ~rules:[ Context_free.Rule.attr_str_type_decl
                Attr.td
                expand_str_type_decls

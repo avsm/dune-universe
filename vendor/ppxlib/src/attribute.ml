@@ -35,7 +35,7 @@ module Context = struct
     | Pstr_extension          : structure_item          t
     | Psig_extension          : signature_item          t
     | Rtag                    : row_field               t
-    | Object_type_field       : object_field            t
+    | Object_type_field       : (string loc * attributes * core_type) t
 
   let label_declaration       = Label_declaration
   let constructor_declaration = Constructor_declaration
@@ -83,11 +83,7 @@ module Context = struct
   let get_rtag : row_field -> _ = function
     | Rtag (lbl, attrs, can_be_constant, params_opts) ->
       (lbl, attrs, can_be_constant, params_opts)
-    | Rinherit _ -> failwith "Attribute.Context.get_rtag"
-
-  let get_otag : object_field -> _ = function
-    | Otag (lbl, attrs, typ) -> (lbl, attrs, typ)
-    | Oinherit _ -> failwith "Attribute.Context.get_otag"
+    | Rinherit _ -> failwith "Attribute.Context.get_rgag"
 
   let get_attributes : type a. a t -> a -> attributes = fun t x ->
     match t with
@@ -117,7 +113,7 @@ module Context = struct
     | Pstr_extension          -> snd (get_pstr_extension x)
     | Psig_extension          -> snd (get_psig_extension x)
     | Rtag                    -> let (_, attrs, _, _) = get_rtag x in attrs
-    | Object_type_field       -> let (_, attrs, _) = get_otag x in attrs
+    | Object_type_field       -> let (_, attrs, _) = x in attrs
 
   let set_attributes : type a. a t -> a -> attributes -> a = fun t x attrs ->
     match t with
@@ -153,8 +149,8 @@ module Context = struct
       let (lbl, _, can_be_constant, params_opts) = get_rtag x in
       Rtag (lbl, attrs, can_be_constant, params_opts)
     | Object_type_field ->
-      let (lbl, _, typ) = get_otag x in
-      Otag (lbl, attrs, typ)
+      let (name, _, typ) = x in
+      (name, attrs, typ)
 
   let desc : type a. a t -> string = function
     | Label_declaration       -> "label declaration"
@@ -276,17 +272,17 @@ let declare name context pattern k =
   }
 ;;
 
-module Attribute_table = Caml.Hashtbl.Make(struct
-    type t = string loc
-    let hash : t -> int = Hashtbl.hash
-    let equal : t -> t -> bool = Polymorphic_compare.equal
+module Phys_table = Caml.Hashtbl.Make(struct
+    type t = string
+    let hash = Hashtbl.hash
+    let equal = phys_equal
   end)
 
-let not_seen = Attribute_table.create 128
+let not_seen = Phys_table.create 128
 
 let mark_as_seen attr =
-  let name = fst attr in
-  Attribute_table.remove not_seen name
+  let name = (fst attr).txt in
+  Phys_table.remove not_seen name
 ;;
 
 let mark_as_handled_manually = mark_as_seen
@@ -352,8 +348,8 @@ let remove_seen (type a) (context : a Context.t) packeds (x : a) =
           match get_internal t attrs with
           | None      -> loop acc rest
           | Some attr ->
-            let name = fst attr in
-            if Attribute_table.mem not_seen name then
+            let name = (fst attr).txt in
+            if Phys_table.mem not_seen name then
               loop acc rest
             else
               loop (attr :: acc) rest
@@ -417,7 +413,7 @@ end
 let check_attribute registrar context name =
   if not (Name.Whitelisted.is_whitelisted ~kind:`Attribute name.txt
           || Name.Reserved_namespaces.is_in_reserved_namespaces name.txt)
-  && Attribute_table.mem not_seen name then
+  && Phys_table.mem not_seen name.txt then
     let white_list = Name.Whitelisted.get_attribute_list () in
     Name.Registrar.raise_errorf registrar context ~white_list
       "Attribute `%s' was not used" name
@@ -522,24 +518,27 @@ let check_unused = object(self)
     super#signature_item item
 end
 
-let reset_checks () = Attribute_table.clear not_seen
+let reset_checks () = Phys_table.clear not_seen
 
-let collect = object
-  inherit Ast_traverse.iter as super
+let freshen_and_collect = object
+  inherit Ast_traverse.map as super
 
   method! attribute ((name, payload) as attr) =
     let loc = Common.loc_of_attribute attr in
-    super#payload payload;
-    Attribute_table.add not_seen name loc
+    let payload = super#payload payload in
+    (* This code relies on phys_equal of strings. *)
+    let key = String.copy name.txt in
+    let name = { name with txt = key } in
+    Phys_table.add not_seen key loc;
+    (name, payload)
 end
 
 let check_all_seen () =
   let fail name loc =
-    let txt = name.txt in
-    if not (Name.comes_from_merlin txt) then
-      Location.raise_errorf ~loc "Attribute `%s' was silently dropped" txt
+    if not (Name.comes_from_merlin name) then
+      Location.raise_errorf ~loc "Attribute `%s' was silently dropped" name
   in
-  Attribute_table.iter fail not_seen
+  Phys_table.iter fail not_seen
 ;;
 
 let remove_attributes_present_in table = object
@@ -547,23 +546,23 @@ let remove_attributes_present_in table = object
 
   method! attribute (name, payload) =
     super#payload payload;
-    Attribute_table.remove table name
+    Phys_table.remove table name.txt
 end
 
 let copy_of_not_seen () =
-  let copy = Attribute_table.create (Attribute_table.length not_seen) in
-  Attribute_table.iter (Attribute_table.add copy) not_seen;
+  let copy = Phys_table.create (Phys_table.length not_seen) in
+  Phys_table.iter (Phys_table.add copy) not_seen;
   copy
 ;;
 
 let dropped_so_far_structure st =
   let table = copy_of_not_seen () in
   (remove_attributes_present_in table)#structure st;
-  Attribute_table.fold (fun name loc acc -> { txt = name.txt; loc } :: acc) table []
+  Phys_table.fold (fun txt loc acc -> { txt; loc } :: acc) table []
 ;;
 
 let dropped_so_far_signature sg =
   let table = copy_of_not_seen () in
   (remove_attributes_present_in table)#signature sg;
-  Attribute_table.fold (fun name loc acc -> { txt = name.txt; loc } :: acc) table []
+  Phys_table.fold (fun txt loc acc -> { txt; loc } :: acc) table []
 ;;
