@@ -12,6 +12,9 @@ vendor:
 	$(MAKE) v-pull
 	$(MAKE) v-merge
 
+install-base:
+	opam install -y -j4 ocamlbuild uchar ocamlfind menhir
+
 doc:
 	dune build --profile=release @doc
 
@@ -32,4 +35,4 @@ v-merge:
 	rm -rf vendor/cstruct/async
 	git commit -m 'trim vendor' vendor/ || true
 
-.PHONY: vendor build
+.PHONY: vendor build install-base
