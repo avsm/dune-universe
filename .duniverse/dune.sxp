@@ -50,6 +50,7 @@
     (ref duniverse-2.0.0-rc3))
    ((dir core) (upstream https://github.com/janestreet/core.git)
     (ref v0.11.1))
+   ((dir atd) (upstream https://github.com/mjambon/atd.git) (ref 2.0.0))
    ((dir extlib) (upstream git://github.com/dune-universe/ocaml-extlib.git)
     (ref duniverse-1.7.4))
    ((dir ppx_js_style)
