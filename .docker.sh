@@ -2,8 +2,9 @@
 DISTRO=${DISTRO:-alpine-3.7}
 
 set -ex
-sudo chown -R opam /home/opam/src
-cd /home/opam/src
+sudo rsync -a /home/opam/src /home/opam/build
+sudo chown -R opam /home/opam/build
+cd /home/opam/build
 make install-depext
 opam pin add -n jbuilder --dev
 opam pin add -y dune https://github.com/ocaml/dune.git
