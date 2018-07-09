@@ -1,7 +1,23 @@
-/* This file is part of Lwt, released under the MIT license. See LICENSE.md for
-   details, or visit https://github.com/ocsigen/lwt/blob/master/LICENSE.md. */
-
-
+/* OCaml promise library
+ * http://www.ocsigen.org/lwt
+ * Copyright (C) 2009-2010 Jérémie Dimino
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, with linking exceptions;
+ * either version 2.1 of the License, or (at your option) any later
+ * version. See COPYING file for details.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ */
 
 #include "lwt_config.h"
 
@@ -1120,22 +1136,24 @@ static void *worker_loop(void *data) {
 
     lwt_unix_mutex_lock(&pool_mutex);
 
+    /* One more thread is waiting for work. */
+    thread_waiting_count++;
+
     DEBUG("waiting for something to do");
 
 /* Wait for something to do. */
 #if defined(LWT_UNIX_HAVE_ASYNC_SWITCH)
-    while (pool_queue == NULL && main_state == STATE_RUNNING) {
-      ++thread_waiting_count;
+    while (pool_queue == NULL && main_state == STATE_RUNNING)
       lwt_unix_condition_wait(&pool_condition, &pool_mutex);
-    }
 #else
-    while (pool_queue == NULL) {
-      ++thread_waiting_count;
+    while (pool_queue == NULL)
       lwt_unix_condition_wait(&pool_condition, &pool_mutex);
-    }
 #endif
 
     DEBUG("received something to do");
+
+    /* This thread is busy. */
+    thread_waiting_count--;
 
 #if defined(LWT_UNIX_HAVE_ASYNC_SWITCH)
     if (main_state == STATE_BLOCKED) {
@@ -1250,7 +1268,7 @@ CAMLprim value lwt_unix_start_job(value val_job, value val_async_method) {
       return Val_true;
 
     case LWT_UNIX_ASYNC_METHOD_DETACH:
-      initialize_threading();
+      if (threading_initialized == 0) initialize_threading();
 
       lwt_unix_mutex_init(&job->mutex);
 
@@ -1284,7 +1302,6 @@ CAMLprim value lwt_unix_start_job(value val_job, value val_async_method) {
           pool_queue = job;
         }
         /* Wakeup one worker. */
-        --thread_waiting_count;
         lwt_unix_condition_signal(&pool_condition);
         lwt_unix_mutex_unlock(&pool_mutex);
       }
@@ -1304,7 +1321,7 @@ CAMLprim value lwt_unix_start_job(value val_job, value val_async_method) {
       if (SIGRTMIN > SIGRTMAX)
         caml_invalid_argument("the switch method is not supported");
 
-      initialize_threading();
+      if (threading_initialized == 0) initialize_threading();
 
       lwt_unix_mutex_init(&job->mutex);
       job->thread = main_thread;

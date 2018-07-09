@@ -1,33 +1,3 @@
-===== 4.1.0 (2018-06-26) =====
-
-====== Additions ======
-
-  * Change license to MIT (#560).
-  * Lwt_fmt, an Lwt-aware version of Format (#548, Gabriel Radanne).
-  * Lwt_io.establish_server_with_client_socket (#586).
-
-====== Bugs fixed ======
-
-  * Lwt_stream.iter_n: rename ?max_threads argument to ?max_concurrency (#581,
-    Hezekiah Carty).
-  * PPX: reject match expressions that have only exception cases (#597, Raphaël
-    Proust).
-
-====== Miscellaneous ======
-
-  * Improvements to Lwt_pool docs (#575, Bobby Priambodo).
-  * Restore all PPX tests (#590, Jess Smith).
-
-===== 4.0.1 (2018-04-13) =====
-
-====== Bugs fixed ======
-
-  * Race condition in worker thread management in Lwt_unix (#569, diagnosed Gabe
-    Levi).
-  * Hang in Lwt_unix.read on Windows (#574, #569, 86a6baf, diagnosed Gabe Levi).
-  * Docs: note that Lwt_io.open_file for writing truncates the file by default
-    (#570, reported Tóth Róbert).
-
 ===== 4.0.0 (2018-03-30) =====
 
 ====== Breaking ======
@@ -55,7 +25,7 @@ upgrade paths.
     a forever-pending promise. Also applies to Lwt.choose, Lwt.npick,
     Lwt.nchoose, and Lwt.nchoose_split (#562, Tim Reinke, prompted Hezekiah
     Carty).
-  * Remove translation of [%lwt ...] to Lwt.catch from the PPX (#527).
+  * Remove transation of [%lwt ...] to Lwt.catch from the PPX (#527).
   * Remove -no-debug option from the PPX (#528).
   * Remove Lwt_log support from the PPX (#520).
 
