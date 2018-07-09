@@ -7,7 +7,7 @@
  * This file is a part of Lambda-Term.
  *)
 
-open CamomileLibraryDyn.Camomile
+open CamomileLibraryDefault.Camomile
 open Lwt_react
 open LTerm_geom
 
@@ -112,12 +112,12 @@ let () =
   match LTerm_unix.sigwinch with
     | None ->
         (* Check for size when something happen. *)
-        ignore (Lwt_sequence.add_r send_resize Lwt_main.enter_iter_hooks)
+        ignore (LTerm_dlist.add_l send_resize (LTerm_dlist.create ()))
     | Some signum ->
         try
           ignore (Lwt_unix.on_signal signum (fun _ -> send_resize ()))
         with Not_found ->
-          ignore (Lwt_sequence.add_r send_resize Lwt_main.enter_iter_hooks)
+          ignore (LTerm_dlist.add_l send_resize (LTerm_dlist.create ()))
 
 (* +-----------------------------------------------------------------+
    | Creation                                                        |
