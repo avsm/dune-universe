@@ -1,0 +1,7 @@
+B ../../../_build/default/vendor/fmt/src/.fmt.objs
+B ../../../_build/default/vendor/mirage-device/src/.mirage_device.objs
+B ../../../_build/default/vendor/result/.result.objs
+S ../../fmt/src
+S .
+S ../../result
+FLG -w -40
