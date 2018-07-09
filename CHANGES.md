@@ -1,7 +1,3 @@
-## v0.11.1
-
-- Update for AST 4.06
-
 ## v0.10
 
 - Fixed `[@@deriving hash]` on nested tuples
