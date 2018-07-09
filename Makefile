@@ -1,5 +1,5 @@
 PACKAGES=opam-devel dune-release utop bun odoc merlin ocp-indent craml mirage mirage-types-lwt async core_extended patdiff atdgen
-PINS=ocp-indent odoc tyxml ocamlformat merlin ppx_tools_versioned
+PINS=ocp-indent odoc tyxml ocamlformat merlin ppx_tools_versioned mirage-flow
 INSTALLS=vendor/ocp-indent/ocp-indent.install vendor/opam-core/opam-client.install vendor/merlin/merlin.install vendor/odoc/odoc.install vendor/dune-release/dune-release.install vendor/utop/utop.install vendor/bun/bun.install vendor/opam-ci/opam-ci.install vendor/mirage/mirage.install
 
 build:
