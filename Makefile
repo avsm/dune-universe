@@ -32,6 +32,7 @@ v-pull:
 
 v-merge:
 	duniverse vendor-merge -v
+	rm -rf vendor/mirage-console/xen # until mirage-xen is ported
 	git commit -m 'trim vendor' vendor/ || true
 
 .PHONY: vendor build install-base
