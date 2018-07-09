@@ -1,7 +1,23 @@
-(* This file is part of Lwt, released under the MIT license. See LICENSE.md for
-   details, or visit https://github.com/ocsigen/lwt/blob/master/LICENSE.md. *)
-
-
+(* OCaml promise library
+ * http://www.ocsigen.org/lwt
+ * Copyright (C) 2009 Jérémie Dimino
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, with linking exceptions;
+ * either version 2.1 of the License, or (at your option) any later
+ * version. See COPYING file for details.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+*)
 
 (** Data streams *)
 
@@ -17,10 +33,7 @@ type 'a t
     This module may undergo redesign or deprecation in the future. See
     {{:https://github.com/ocsigen/lwt/issues/250} Flaws of [Lwt_stream]}. In
     the meantime, you may want to consider using alternatives such as
-    {{:https://github.com/c-cube/lwt-pipe} lwt-pipe}. [Lwt_stream] will remain
-    stable for the foreseeable future, but we would like to encourage users to
-    try alternatives such as lwt-pipe, to collect feedback for those
-    projects. *)
+    {{:https://github.com/c-cube/lwt-pipe} lwt-pipe}. *)
 
 (** {2 Construction} *)
 
@@ -311,16 +324,12 @@ val iter_p : ('a -> unit Lwt.t) -> 'a t -> unit Lwt.t
 val iter_s : ('a -> unit Lwt.t) -> 'a t -> unit Lwt.t
 (** [iter f s] iterates over all elements of the stream. *)
 
-val iter_n : ?max_concurrency:int -> ('a -> unit Lwt.t) -> 'a t -> unit Lwt.t
-(** [iter_n ?max_concurrency f s] iterates over all elements of the stream [s].
-    Iteration is performed concurrently with up to [max_threads] concurrent
-    instances of [f].
+val iter_n : ?max_threads:int -> ('a -> unit Lwt.t) -> 'a t -> unit Lwt.t
+  (** [iter_n ?max_threads f s] iterates over all elements of the stream [s].
+      Iteration is performed concurrently with up to [max_threads] concurrent
+      instances of [f].
 
-    Iteration is {b not} guaranteed to be in order as this function will
-    attempt to always process [max_concurrency] elements from [s] at once.
-
-    @param max_concurrency defaults to [1].
-    @raise Invalid_argument if [max_concurrency < 1]. *)
+      @param max_threads defaults to [1]. *)
 
 val find : ('a -> bool) -> 'a t -> 'a option Lwt.t
 val find_s : ('a -> bool Lwt.t) -> 'a t -> 'a option Lwt.t

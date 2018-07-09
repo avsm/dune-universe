@@ -1,5 +1,5 @@
 opam-version: "1.2"
-version: "4.1.0"
+version: "4.0.0"
 maintainer: [
   "Anton Bachin <antonbachin@yahoo.com>"
   "Mauricio Fernandez <mfp@acm.org>"
@@ -19,6 +19,7 @@ build: [
   [ "ocaml" "src/util/configure.ml" "-use-libev" "%{conf-libev:installed}%" ]
   [ "jbuilder" "build" "-p" name "-j" jobs ]
 ]
+build-test: [ [ "jbuilder" "runtest" "-p" name ] ]
 
 depends: [
   "cppo" {build & >= "1.1.0"}
@@ -51,4 +52,8 @@ messages: [
     {camlp4:installed & !lwt_camlp4:installed}
   "For Lwt_log and Lwt_daemon, please install package lwt_log"
     {!lwt_log:installed}
+]
+post-messages: [
+  "Lwt 4.0.0 has made some breaking changes. See
+  https://github.com/ocsigen/lwt/issues/453"
 ]

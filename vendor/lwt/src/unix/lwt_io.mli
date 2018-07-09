@@ -1,7 +1,23 @@
-(* This file is part of Lwt, released under the MIT license. See LICENSE.md for
-   details, or visit https://github.com/ocsigen/lwt/blob/master/LICENSE.md. *)
-
-
+(* OCaml promise library
+ * http://www.ocsigen.org/lwt
+ * Copyright (C) 2009 Jérémie Dimino
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, with linking exceptions;
+ * either version 2.1 of the License, or (at your option) any later
+ * version. See COPYING file for details.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *)
 
 (** Buffered byte channels *)
 
@@ -392,53 +408,27 @@ type file_name = string
     (** Type of file names *)
 
 val open_file :
-  ?buffer:Lwt_bytes.t ->
-  ?flags:Unix.open_flag list ->
-  ?perm:Unix.file_perm ->
-  mode:'a mode ->
-  file_name ->
-    'a channel Lwt.t
-(** [Lwt_io.open_file ~mode file] opens the given file, either for reading (with
-    [~mode:Input]) or for writing (with [~mode:Output]). The returned channel
-    provides buffered I/O on the file.
+  ?buffer : Lwt_bytes.t ->
+  ?flags : Unix.open_flag list ->
+  ?perm : Unix.file_perm ->
+  mode : 'a mode ->
+  file_name -> 'a channel Lwt.t
+  (** [open_file ?buffer ?flags ?perm ~mode filename] opens the
+      file with name [filename] and returns a channel for
+      reading/writing it.
 
-    If [~buffer] is supplied, it is used as the I/O buffer.
-
-    If [~flags] is supplied, the file is opened with the given flags (see
-    {{: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Unix.html#TYPEopen_flag}
-    [Unix.open_flag]}). Note that [~flags] is used {e exactly} as given. For
-    example, opening a file with [~flags] and [~mode:Input] does {e not}
-    implicitly add [O_RDONLY]. So, you should include [O_RDONLY] when opening
-    for reading ([~mode:Input]), and [O_WRONLY] when opening for writing
-    ([~mode:Input]). It is also recommended to include [O_NONBLOCK], unless you
-    are sure that the file cannot be a socket or a named pipe.
-
-    The default permissions used for creating new files are [0o666], i.e.
-    reading and writing are allowed for the file owner, group, and everyone.
-    These default permissions can be overridden by supplying [~perm].
-
-    Note: if opening for writing ([~mode:Output]), and the file already exists,
-    [open_file] truncates (clears) the file by default. If you would like to
-    keep the pre-existing contents of the file, use the [~flags] parameter to
-    pass a custom flags list that does not include [Unix.O_TRUNC].
-
-    @raise Unix.Unix_error on error. *)
+      @raise Unix.Unix_error on error.
+  *)
 
 val with_file :
-  ?buffer:Lwt_bytes.t ->
-  ?flags:Unix.open_flag list ->
-  ?perm:Unix.file_perm ->
-  mode:'a mode ->
-  file_name ->
-  ('a channel -> 'b Lwt.t) ->
-    'b Lwt.t
-(** [Lwt_io.with_file ~mode filename f] opens the given using
-    {!Lwt_io.open_file}, and passes the resulting channel to [f].
-    [Lwt_io.with_file] ensures that the channel is closed when the promise
-    returned by [f] resolves, or if [f] raises an exception.
-
-    See {!Lwt_io.open_file} for a description of the arguments, warnings, and
-    other notes. *)
+  ?buffer : Lwt_bytes.t ->
+  ?flags : Unix.open_flag list ->
+  ?perm : Unix.file_perm ->
+  mode : 'a mode ->
+  file_name -> ('a channel -> 'b Lwt.t) -> 'b Lwt.t
+  (** [with_file ?buffer ?flags ?perm ~mode filename f] opens a
+      file and passes the channel to [f]. It is ensured that the
+      channel is closed when [f ch] terminates (even if it fails). *)
 
 val open_temp_file :
   ?buffer:Lwt_bytes.t ->
@@ -530,33 +520,35 @@ val with_close_connection :
 type server
   (** Type of a server *)
 
-val establish_server_with_client_socket :
-  ?server_fd:Lwt_unix.file_descr ->
-  ?backlog:int ->
-  ?no_close:bool ->
+val establish_server_with_client_address :
+  ?fd : Lwt_unix.file_descr ->
+  ?buffer_size : int ->
+  ?backlog : int ->
+  ?no_close : bool ->
   Unix.sockaddr ->
-  (Lwt_unix.sockaddr -> Lwt_unix.file_descr -> unit Lwt.t) ->
+  (Lwt_unix.sockaddr -> input_channel * output_channel -> unit Lwt.t) ->
     server Lwt.t
-(** [establish_server_with_client_socket listen_address f] creates a server
+(** [establish_server_with_client_address listen_address f] creates a server
     which listens for incoming connections on [listen_address]. When a client
     makes a new connection, it is passed to [f]: more precisely, the server
     calls
 
 {[
-f client_address client_socket
+f client_address (in_channel, out_channel)
 ]}
 
     where [client_address] is the address (peer name) of the new client, and
-    [client_socket] is the socket connected to the client.
+    [in_channel] and [out_channel] are two channels wrapping the socket for
+    communicating with that client.
 
     The server does not block waiting for [f] to complete: it concurrently tries
     to accept more client connections while [f] is handling the client.
 
     When the promise returned by [f] completes (i.e., [f] is done handling the
-    client), [establish_server_with_client_socket] automatically closes
-    [client_socket]. This is a default behavior that is useful for simple cases,
-    but for a robust application you should explicitly close these channels
-    yourself, and handle any exceptions as appropriate. If the channels are
+    client), [establish_server_with_client_address] automatically closes
+    [in_channel] and [out_channel]. This is a default behavior that is useful
+    for simple cases, but for a robust application you should explicitly close
+    these channels yourself, and handle any exceptions. If the channels are
     still open when [f] completes, and their automatic closing raises an
     exception, [establish_server_with_client_address] treats it as an unhandled
     exception reaching the top level of the application: it passes that
@@ -569,33 +561,14 @@ f client_address client_socket
     an exception), [establish_server_with_client_address] can do nothing with
     that exception, except pass it to {!Lwt.async_exception_hook}.
 
-    [~server_fd] can be specified to use an existing file descriptor for
-    listening. Otherwise, a fresh socket is created internally. In either case,
-    [establish_server_with_client_socket] will internally assign
-    [listen_address] to the server socket.
+    [~fd] can be specified to use an existing file descriptor for listening.
+    Otherwise, a fresh socket is created internally.
 
     [~backlog] is the argument passed to {!Lwt_unix.listen}.
 
     The returned promise (a [server Lwt.t]) resolves when the server has just
     started listening on [listen_address]: right after the internal call to
     [listen], and right before the first internal call to [accept].
-
-    @since 4.1.0 *)
-
-val establish_server_with_client_address :
-  ?fd:Lwt_unix.file_descr ->
-  ?buffer_size:int ->
-  ?backlog:int ->
-  ?no_close:bool ->
-  Unix.sockaddr ->
-  (Lwt_unix.sockaddr -> input_channel * output_channel -> unit Lwt.t) ->
-    server Lwt.t
-(** Like {!Lwt_io.establish_server_with_client_socket}, but passes two buffered
-    channels to the connection handler [f]. These channels wrap the client
-    socket.
-
-    The channels are closed automatically when the promise returned by [f]
-    resolves. To avoid this behavior, pass [~no_close:true].
 
     @since 3.1.0 *)
 
@@ -731,7 +704,7 @@ val establish_server :
   [@@ocaml.deprecated
 "  Since Lwt 3.1.0, use Lwt_io.establish_server_with_client_address"]
 (** Like [establish_server_with_client_address], but does not pass the client
-    address or fd to the callback [f].
+    address to the callback [f].
 
     @deprecated Use {!establish_server_with_client_address}.
     @since 3.0.0 *)
