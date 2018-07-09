@@ -1,10 +1,6 @@
-(alias
- ((name runtest)
-  (deps (test.ml
-         (glob_files ${SCOPE_ROOT}/src/.ppxlib.objs/*.cmi)))
-  (action (chdir ${SCOPE_ROOT}
-           (progn
-            (ignore-outputs (run ${exe:../expect/expect_test.exe} ${<}))
-            (diff? ${<} ${<}.corrected))))))
+(library
+ ((name ppxlib_traverse_test)
+  (flags (:standard -safe-string))
+  (preprocess (pps (ppx_inline_test ppxlib_traverse -type-conv-keep-w32=impl ppxlib.runner)))))
 
 (jbuild_version 1)

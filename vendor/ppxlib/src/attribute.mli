@@ -42,7 +42,7 @@ module Context : sig
     | Pstr_extension          : structure_item          t
     | Psig_extension          : signature_item          t
     | Rtag                    : row_field               t
-    | Object_type_field       : object_field            t
+    | Object_type_field       : (string loc * attributes * core_type) t
 
   val label_declaration       : label_declaration       t
   val constructor_declaration : constructor_declaration t
@@ -70,7 +70,7 @@ module Context : sig
   val pstr_extension          : structure_item          t
   val psig_extension          : signature_item          t
   val rtag                    : row_field               t
-  val object_type_field       : object_field            t
+  val object_type_field       : (string loc * attributes * core_type) t
 end
 
 (** [declare fully_qualified_name context payload_pattern k] declares an attribute. [k] is
@@ -172,9 +172,9 @@ val explicitly_drop : Ast_traverse.iter
 (** Raise if there are unused attributes *)
 val check_unused : Ast_traverse.iter
 
-(** Collect all attribute names. To be used in conjuction with
-    {!check_all_seen}. *)
-val collect : Ast_traverse.iter
+(** Replace all attribute names by a [String.copy] and collect them. To be used in
+    conjuction with {!check_all_seen}. *)
+val freshen_and_collect : Ast_traverse.map
 
 (** Check that all attributes collected by {!freshen_and_collect} have been:
 
