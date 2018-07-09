@@ -2,8 +2,9 @@
   (((name async)) ((name atdgen)) ((name bun)) ((name core_extended))
    ((name craml)) ((name dune-release)) ((name merlin)) ((name mirage))
    ((name mirage-types-lwt)) ((name ocp-indent)) ((name odoc))
-   ((name opam-devel)) ((name patdiff)) ((name ppx_driver)) ((name utop))
-   ((name xen-evtchn)) ((name xen-gnt)) ((name xenctrl)) ((name xenstore))))
+   ((name opam-devel)) ((name patdiff)) ((name ppx_driver))
+   ((name shared-memory-ring)) ((name utop)) ((name xen-evtchn))
+   ((name xen-gnt)) ((name xenctrl)) ((name xenstore))))
  (excludes ())
  (pins
   (ocp-indent odoc tyxml ocamlformat merlin ppx_tools_versioned mirage-flow
@@ -166,6 +167,8 @@
    ((package ((name xenctrl) (version (0.9.31))))
     (dev_repo (Github (xapi-project ocaml-xen-lowlevel-libs)))
     (tag (v0.9.31)) (is_dune false))
+   ((package ((name shared-memory-ring) (version (3.0.0))))
+    (dev_repo (Github (mirage shared-memory-ring))) (tag (3.0.0)))
    ((package ((name astring) (version (0.8.3))))
     (dev_repo (Duniverse_fork astring)) (tag (v0.8.3)))
    ((package ((name logs) (version (0.6.2))))
