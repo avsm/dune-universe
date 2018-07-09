@@ -31,3 +31,5 @@ v-merge:
 	rm -rf vendor/csv/tests
 	rm -rf vendor/cstruct/async
 	git commit -m 'trim vendor' vendor/ || true
+
+.PHONY: vendor build
