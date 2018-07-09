@@ -172,6 +172,8 @@
     (ref v0.11.0))
    ((dir core_kernel)
     (upstream https://github.com/janestreet/core_kernel.git) (ref v0.11.0))
+   ((dir xenstore) (upstream https://github.com/mirage/ocaml-xenstore.git)
+    (ref 2.0.0))
    ((dir zed) (upstream https://github.com/diml/zed.git) (ref 1.6))
    ((dir splittable_random)
     (upstream https://github.com/janestreet/splittable_random.git)

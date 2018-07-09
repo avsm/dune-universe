@@ -4,6 +4,8 @@ services:
 language: c
 script:
   - docker run -e DISTRO=${DISTRO} -v `pwd`:/home/opam/src ocaml/opam2:${DISTRO} /home/opam/src/.docker.sh
+conditions: v1
+if: branch = master
 env:
   matrix:
   - DISTRO="debian-9"

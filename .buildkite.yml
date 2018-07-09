@@ -1,0 +1,9 @@
+steps:
+  - label: 'Build'
+    command:
+      - docker pull ocaml/opam2
+      - docker run -e DISTRO=debian-9 -v `pwd`:/home/opam/src ocaml/opam2 /home/opam/src/.docker.sh
+    agents:
+      docker: "true"
+      arch: "amd64"
+
