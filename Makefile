@@ -15,6 +15,9 @@ vendor:
 install-base:
 	opam install -y -j4 ocamlbuild uchar ocamlfind menhir
 
+install-depext:
+	opam --yes depext -uy $(PACKAGES)
+
 doc:
 	dune build --profile=release @doc
 
