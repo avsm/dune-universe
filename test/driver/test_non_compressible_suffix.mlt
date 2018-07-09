@@ -1,8 +1,5 @@
-#use "topfind";;
-#require "base";;
-#require "stdio";;
-
 open Ppxlib;;
+open Ppx_core;;
 open Ast_builder.Default;;
 
 Driver.register_transformation "blah"
@@ -18,22 +15,24 @@ Driver.register_transformation "blah"
                 (fun ~loc ~path:_ -> eint ~loc 42))
          ]
 ;;
-[%%expect{|
-- : unit = ()
-|}]
+
+#verbose true;;
 
 [%foo];;
+
 [%%expect{|
 - : int = 42
-|}]
+|}];;
 
 [%foo.bar];;
+
 [%%expect{|
 - : int = 42
-|}]
+|}];;
 
 [%bar];;
+
 [%%expect{|
-File "test/driver/non-compressible-suffix/test.ml", line 2, characters 2-5:
-Error: Uninterpreted extension 'bar'.
+Line _, characters 2-5:
+Error: Extension `bar' was not translated
 |}]
