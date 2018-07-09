@@ -9,7 +9,7 @@
 
 (* A mini shell *)
 
-open CamomileLibraryDefault.Camomile
+open CamomileLibraryDyn.Camomile
 open React
 open Lwt
 open LTerm_style

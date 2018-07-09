@@ -8,7 +8,7 @@
  *)
 
 {
-  open CamomileLibraryDefault.Camomile
+  open CamomileLibraryDyn.Camomile
   open LTerm_key
 
   let return, (>>=) = Lwt.return, Lwt.(>>=)

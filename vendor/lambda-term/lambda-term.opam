@@ -11,10 +11,9 @@ build: [
 ]
 depends: [
   "lwt"   {>= "2.7.0"}
-  "lwt_log"
   "react"
   "zed"   {>= "1.2"}
-  "camomile" {>= "0.8.6"}
+  "camomile"
   "lwt_react"
   "jbuilder" {build & >= "1.0+beta9"}
 ]

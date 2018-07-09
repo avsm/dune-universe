@@ -142,27 +142,27 @@ static void worker_read_console_input(struct job_read_console_input *job)
 
 CAMLprim value lt_windows_read_console_input_job(value val_fd)
 {
-  LWT_UNIX_INIT_JOB(job, read_console_input, 0);
+  struct job_read_console_input *job = lwt_unix_new(struct job_read_console_input);
+  job->job.worker = (lwt_unix_job_worker)worker_read_console_input;
   job->handle = Handle_val(val_fd);
   job->error_code = 0;
-  CAMLreturn(lwt_unix_alloc_job(&(job->job)));
+  return lwt_unix_alloc_job(&(job->job));
 }
 
-static value result_read_console_input_result(struct job_read_console_input *job)
+CAMLprim value lt_windows_read_console_input_result(value val_job)
 {
-  INPUT_RECORD input;
+  INPUT_RECORD *input;
   DWORD cks, bs;
   WORD code;
   int i;
-  CAMLparam0();
+  CAMLparam1(val_job);
   CAMLlocal3(result, x, y);
-  int error_code = job->error_code;
-  input = job->input;
-  lwt_unix_free_job(&job->job);
-  if (error_code) {
-    win32_maperr(error_code);
+  struct job_read_console_input *job = Job_read_console_input_val(val_job);
+  if (job->error_code) {
+    win32_maperr(job->error_code);
     uerror("ReadConsoleInput", Nothing);
   }
+  input = &(job->input);
   switch (input->EventType) {
   case KEY_EVENT: {
     result = caml_alloc(1, 0);
@@ -210,6 +210,12 @@ static value result_read_console_input_result(struct job_read_console_input *job
     CAMLreturn(Val_int(0));
   }
   CAMLreturn(Val_int(0));
+}
+
+CAMLprim value lt_windows_read_console_input_free(value val_job)
+{
+  lwt_unix_free_job(&(Job_read_console_input_val(val_job))->job);
+  return Val_unit;
 }
 
 /* +-----------------------------------------------------------------+
