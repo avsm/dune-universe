@@ -1,10 +1,11 @@
 PACKAGES=opam-devel dune-release utop bun odoc merlin ocp-indent craml mirage mirage-types-lwt async core_extended patdiff atdgen xenstore ppx_driver xen-gnt xen-evtchn xenctrl shared-memory-ring mtime
-PINS=ocp-indent odoc tyxml ocamlformat merlin ppx_tools_versioned mirage-flow mirage-flow-lwt mirage-flow-unix mirage-flow-rawlink xenstore ipaddr lambda-term shared-memory-ring shared-memory-ring-lwt
+PINS=ocp-indent odoc tyxml ocamlformat merlin ppx_tools_versioned xenstore ipaddr lambda-term yojson
 INSTALLS=vendor/ocp-indent/ocp-indent.install vendor/opam-core/opam-client.install vendor/merlin/merlin.install vendor/odoc/odoc.install vendor/dune-release/dune-release.install vendor/utop/utop.install vendor/bun/bun.install vendor/opam-ci/opam-ci.install vendor/mirage/mirage.install
 
 build:
 	cd vendor/lwt && ocaml src/util/configure.ml -use-libev false
 	cd vendor/markup && ocaml src/configure.ml
+	dune build --profile=release @doc
 	dune build --profile=release @install
 
 vendor:
