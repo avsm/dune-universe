@@ -7,9 +7,9 @@
    ((name xen-gnt)) ((name xenctrl)) ((name xenstore))))
  (excludes ())
  (pins
-  (ocp-indent odoc tyxml ocamlformat merlin ppx_tools_versioned mirage-flow
-   mirage-flow-lwt mirage-flow-unix mirage-flow-rawlink xenstore ipaddr
-   lambda-term shared-memory-ring shared-memory-ring-lwt))
+  ((ocp-indent --dev) (odoc --dev) (tyxml --dev) (ocamlformat --dev)
+   (merlin --dev) (ppx_tools_versioned --dev) (xenstore --dev) (ipaddr --dev)
+   (lambda-term --dev) (yojson --dev)))
  (pkgs
   (((package ((name result) (version (1.3))))
     (dev_repo (Github (janestreet result))) (tag (1.3)))
@@ -133,8 +133,6 @@
     (dev_repo (Github (janestreet async))) (tag (v0.11.0)))
    ((package ((name lwt) (version (3.3.0))))
     (dev_repo (Github (ocsigen lwt))) (tag (3.3.0)))
-   ((package ((name ocplib-endian) (version (1.0))))
-    (dev_repo (Github (OCamlPro ocplib-endian))) (tag (1.0)) (is_dune false))
    ((package ((name fmt) (version (0.8.5)))) (dev_repo (Duniverse_fork fmt))
     (tag (v0.8.5)))
    ((package ((name uutf) (version (1.0.1))))
@@ -147,8 +145,8 @@
     (dev_repo (Github (mirage mirage-device))) (tag (v1.1.0)))
    ((package ((name markup) (version (0.7.6))))
     (dev_repo (Github (aantron markup.ml))) (tag (0.7.6)))
-   ((package ((name yojson) (version (1.4.1))))
-    (dev_repo (Github (mjambon yojson))) (tag (v1.4.1)))
+   ((package ((name yojson) (version (dev))))
+    (dev_repo (Github (mjambon yojson))) (tag (master)))
    ((package ((name io-page) (version (2.0.1))))
     (dev_repo (Github (mirage io-page))) (tag (2.0.1)))
    ((package ((name ppx_cstruct) (version (3.2.1))))
@@ -250,8 +248,8 @@
     (dev_repo (Github (mjambon atd))) (tag (2.0.0)))
    ((package ((name atd) (version (2.0.0))))
     (dev_repo (Github (mjambon atd))) (tag (2.0.0)))
-   ((package ((name extlib) (version (1.7.4))))
-    (dev_repo (Duniverse_fork ocaml-extlib)) (tag (1.7.4)))
+   ((package ((name extlib) (version (1.7.5))))
+    (dev_repo (Duniverse_fork ocaml-extlib)) (tag (1.7.5)))
    ((package ((name atdgen) (version (2.0.0))))
     (dev_repo (Github (mjambon atd))) (tag (2.0.0)))
    ((package ((name cudf) (version (0.9)))) (dev_repo (Duniverse_fork cudf))
