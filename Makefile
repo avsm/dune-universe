@@ -14,7 +14,7 @@ vendor:
 	$(MAKE) v-merge
 
 install-base:
-	opam install -y -j4 ocamlbuild uchar ocamlfind menhir ocplib-endian num
+	opam install -y -j4 ocamlbuild uchar ocamlfind menhir ocplib-endian num dune
 
 install-depext:
 	opam --yes depext -uy $(PACKAGES)
